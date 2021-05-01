@@ -58,7 +58,7 @@ public class App implements CommandLineRunner {
 
         AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.standard()
                                                     .withCredentials(new ProfileCredentialsProvider())
-                                                    .withRegion(Regions.US_EAST_2)
+                                                    .withRegion(Regions.EU_WEST_1)
                                                     .build();
 
         //BasicAWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
@@ -76,7 +76,7 @@ public class App implements CommandLineRunner {
 
 
         AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClient.builder()
-                .withRegion(Regions.US_EAST_2)
+                .withRegion(Regions.EU_WEST_1)
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                 .build();
 
