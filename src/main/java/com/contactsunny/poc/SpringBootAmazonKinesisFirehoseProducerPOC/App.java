@@ -15,31 +15,65 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
+import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
+import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
+import com.amazonaws.services.securitytoken.model.Credentials;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 
 import java.nio.ByteBuffer;
 
 @SpringBootApplication
 public class App implements CommandLineRunner {
 
-    @Value("${aws.auth.accessKey}")
-    private String awsAccessKey;
+    @Value("${aws.auth.roleARN}")
+    private String roleARN;
 
-    @Value("${aws.auth.secretKey}")
-    private String awsSecretKey;
+    @Value("${aws.auth.roleSessionName}")
+    private String roleSessionName;
 
     @Value("${aws.kinesis.firehose.deliveryStream.name}")
     private String fireHoseDeliveryStreamName;
 
+
+
     private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
+
+        
         SpringApplication.run(App.class, args);
     }
 
     @Override
     public void run(String... args) throws Exception {
 
-        BasicAWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
+
+
+
+        AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.standard()
+                                                    .withCredentials(new ProfileCredentialsProvider())
+                                                    .withRegion(Regions.US_EAST_2)
+                                                    .build();
+
+        //BasicAWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
+        AssumeRoleRequest roleRequest = new AssumeRoleRequest()
+                                                    .withRoleArn(roleARN)
+                                                    .withRoleSessionName(roleSessionName);
+            AssumeRoleResult roleResponse = stsClient.assumeRole(roleRequest);
+            Credentials sessionCredentials = roleResponse.getCredentials();
+            
+            // Create a BasicSessionCredentials object that contains the credentials you just retrieved.
+            BasicSessionCredentials awsCredentials = new BasicSessionCredentials(
+                    sessionCredentials.getAccessKeyId(),
+                    sessionCredentials.getSecretAccessKey(),
+                    sessionCredentials.getSessionToken());
+
 
         AmazonKinesisFirehose firehoseClient = AmazonKinesisFirehoseClient.builder()
                 .withRegion(Regions.US_EAST_2)
