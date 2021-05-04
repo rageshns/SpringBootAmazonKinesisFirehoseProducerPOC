@@ -1,5 +1,5 @@
 package com.contactsunny.poc.SpringBootAmazonKinesisFirehoseProducerPOC;
-
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
@@ -57,7 +57,8 @@ public class App implements CommandLineRunner {
 
 
         AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.standard()
-                                                    .withCredentials(new ProfileCredentialsProvider())
+                                                   // .withCredentials(new ProfileCredentialsProvider("default"))
+                                                    .withCredentials(new DefaultAWSCredentialsProviderChain())
                                                     .withRegion(Regions.EU_WEST_1)
                                                     .build();
 
@@ -81,9 +82,9 @@ public class App implements CommandLineRunner {
                 .build();
 
         JSONObject messageJson = new JSONObject();
-        messageJson.put("key1", "We are testing Amazon Kinesis Firehose!");
-        messageJson.put("integerKey", 123);
-        messageJson.put("booleanKey", true);
+        messageJson.put("mhm", " Testing Amazon Kinesis Firehose in MHM");
+        messageJson.put("temperature", 123);
+        messageJson.put("pressure", 1200);
         messageJson.put("anotherString", "This should work!");
 
         logger.info("Message to Firehose: " + messageJson.toString());
